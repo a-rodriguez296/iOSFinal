@@ -26,7 +26,8 @@
                   clientKey:@"v6lIaY8OjtneQLo1OrHfdXCBxynL9XBVUvXOPRwP"];
     [PFFacebookUtils initializeFacebookWithApplicationLaunchOptions:launchOptions];
     
-    
+    [[FBSDKApplicationDelegate sharedInstance] application:application
+                             didFinishLaunchingWithOptions:launchOptions];
     
     
     return YES;
