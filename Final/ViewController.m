@@ -50,8 +50,24 @@
 }
 
 -(void)logInViewController:(PFLogInViewController *)logInController didLogInUser:(PFUser *)user{
-    [self updateUI];
-    [self dismissViewControllerAnimated:YES completion:nil];
+    
+    __weak ViewController *weakSelf = self;
+    [PFCloud callFunctionInBackground:@"facebookInfo" withParameters:nil block:^(id  _Nullable object, NSError * _Nullable error) {
+        NSString * userID = [object objectForKey:@"id"] ;
+        NSString *name = [object objectForKey:@"name"];
+        
+        NSString *imageUrl = [NSString stringWithFormat:@"https://graph.facebook.com/%@/picture?type=normal", userID];
+        
+        [[PFUser currentUser] setObject:name forKey:@"name"];
+        [[PFUser currentUser] setObject:imageUrl forKey:@"imgUrl"];
+        [[PFUser currentUser] saveInBackground];
+        
+        [weakSelf updateUI];
+        [weakSelf dismissViewControllerAnimated:YES completion:nil];
+        
+        
+    }];
+
 }
 
 -(void)logInViewController:(PFLogInViewController *)logInController didFailToLogInWithError:(NSError *)error{
@@ -72,21 +88,8 @@
     [self.lblMessage setText:NSLocalizedString(@"Este es el trabajo final de Alejandro Rodríguez", nil)];
     self.imgProfile.layer.cornerRadius = self.imgProfile.frame.size.width/2;
     [self.imgProfile.layer setMasksToBounds:YES];
-   
-    
-    
-    __weak ViewController *weakSelf = self;
-    [PFCloud callFunctionInBackground:@"facebookInfo" withParameters:nil block:^(id  _Nullable object, NSError * _Nullable error) {
-        NSString * userID = [object objectForKey:@"id"] ;
-        NSString *name = [object objectForKey:@"name"];
-        [weakSelf.imgProfile sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://graph.facebook.com/%@/picture?type=normal",userID]]];
-        
-        
-        [[PFUser currentUser] setObject:name forKey:@"name"];
-        [[PFUser currentUser] saveInBackground];
-    }];
+    [self.imgProfile sd_setImageWithURL:[[PFUser currentUser] objectForKey:@"imgUrl"]];
 
-    
 }
 
 -(void) presentLoginViewController{
